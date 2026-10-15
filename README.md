@@ -1,6 +1,6 @@
 # Gharieni Support
 
-A small ticket app for website fixes across **Gharieni, GharieniGroup, Bentlon and Cobalt**.
+A small ticket app for website fixes across **Gharieni, GharieniGroup, Bentlon, Cobalt and MetaWell**.
 
 - `/`: public form: name (required), pick website(s), priority (High = immediate fix, Medium, Low), describe the issue, optional page link / email, and optional screenshots, photos or files (drag & drop, click, or paste a screenshot with Ctrl+V; up to 5 files, 4 MB each).
 - `/admin`: password-protected dashboard: see all tickets, filter by status / site / priority, search, mark **Done**, **Start** (in progress), **Reopen**, change priority, add private notes, delete.
