@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { MAX_FILE_MB, blobToken, isAllowedType, uploadsEnabled } from "@/lib/files";
+import { MAX_FILE_MB, blobAuth, isAllowedType, uploadsEnabled } from "@/lib/files";
 
 export const dynamic = "force-dynamic";
 
@@ -33,17 +33,20 @@ export async function POST(req) {
   }
 
   const safeName = (file.name || "file").replace(/[^\w.\-]+/g, "_").slice(-120);
-  const token = blobToken();
+  const auth = blobAuth(req);
   try {
     const blob = await put(`tickets/${safeName}`, file, {
       access: "public",
       addRandomSuffix: true,
       contentType: file.type || "application/octet-stream",
-      ...(token ? { token } : {}),
+      ...auth,
     });
     return NextResponse.json({ url: blob.url });
   } catch (err) {
     console.error("[upload] put failed:", err);
-    return NextResponse.json({ error: `Upload failed: ${err.message || err}` }, { status: 500 });
+    const hint = Object.keys(auth).length
+      ? ""
+      : " (no Blob token or OIDC token available: add BLOB_READ_WRITE_TOKEN in Vercel)";
+    return NextResponse.json({ error: `Upload failed: ${err.message || err}${hint}` }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { STATUSES, PRIORITIES } from "@/lib/constants";
 import { del } from "@vercel/blob";
 import { updateTicket, deleteTicket, getTicket } from "@/lib/store";
-import { blobToken, uploadsEnabled } from "@/lib/files";
+import { blobAuth, uploadsEnabled } from "@/lib/files";
 import { isAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +33,9 @@ export async function DELETE(req, { params }) {
   const { id } = await params;
   const ticket = await getTicket(id);
   const urls = (ticket?.attachments || []).map((a) => a.url);
-  const token = blobToken();
   if (urls.length && uploadsEnabled()) {
     try {
-      await del(urls, token ? { token } : undefined);
+      await del(urls, blobAuth(req));
     } catch {}
   }
   await deleteTicket(id);
