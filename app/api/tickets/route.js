@@ -3,6 +3,7 @@ import { SITES, PRIORITIES } from "@/lib/constants";
 import { createTicket, listTickets, storageReady } from "@/lib/store";
 import { isAdmin } from "@/lib/auth";
 import { MAX_FILES, isBlobUrl } from "@/lib/files";
+import { notifyNewTicket } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,8 @@ export async function POST(req) {
     pageUrl: clean(body.pageUrl, 1000),
     attachments,
   });
+
+  await notifyNewTicket(ticket, new URL(req.url).origin);
 
   return NextResponse.json({ ok: true, id: ticket.id });
 }

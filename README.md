@@ -15,6 +15,18 @@ Built with Next.js; tickets are stored in Upstash Redis and attachments in Verce
 4. **Set your password**: **Settings → Environment Variables** → add `ADMIN_PASSWORD` (whatever you want to log in with). Optionally add `SESSION_SECRET` (any long random string).
 5. **Redeploy**: Deployments → ⋯ → Redeploy, so the new variables are picked up.
 
+### Email alerts for new tickets (optional)
+
+1. Sign up free at resend.com (use the email address you want alerts sent to).
+2. Create an API key under **API Keys**.
+3. In Vercel → **Settings → Environment Variables**, add:
+   - `RESEND_API_KEY`: the key from Resend
+   - `NOTIFY_EMAIL`: where to send alerts (comma-separate several addresses)
+   - `NOTIFY_FROM` (optional): e.g. `Gharieni Support <support@yourdomain.com>`, only once you've verified that domain in Resend. Without it, alerts come from onboarding@resend.dev and can only go to your Resend sign-up address.
+4. Redeploy.
+
+Urgent tickets get a 🔴 URGENT subject line, and replying to the email replies to the person who submitted it (if they gave an email).
+
 Then share the site's main URL with your team and log in yourself at `/admin`.
 
 ## Local development
