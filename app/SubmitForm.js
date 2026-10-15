@@ -103,7 +103,14 @@ export default function SubmitForm({ uploads }) {
       setDoneId(data.id);
       setForm(EMPTY);
     } catch (err) {
-      setError(err.message || "Upload failed. Please try again.");
+      let msg = err.message || "Upload failed. Please try again.";
+      if (/client token/i.test(msg)) {
+        const check = await fetch("/api/upload").then((r) => r.json()).catch(() => null);
+        msg = check && !check.configured
+          ? "File uploads aren't set up on the server yet (no Blob token). Remove the attachments to submit now."
+          : "The server couldn't authorise the upload. Please tell the admin, or remove the attachments to submit now.";
+      }
+      setError(msg);
     } finally {
       setSending(false);
       setProgress("");

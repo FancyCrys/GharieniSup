@@ -17,7 +17,7 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function Board({ memoryWarning, uploadsWarning }) {
+export default function Board({ memoryWarning, uploadsWarning, blobEnv = [] }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -134,6 +134,8 @@ export default function Board({ memoryWarning, uploadsWarning }) {
       {uploadsWarning && (
         <div className="warn">
           File uploads aren&apos;t connected: no Blob token found. Connect a Public Blob store to this project in Vercel → Storage, then redeploy.
+          <br />
+          Blob settings the app can see: {blobEnv.length ? blobEnv.join(", ") : "none"}
         </div>
       )}
       {error && <div className="error">{error}</div>}

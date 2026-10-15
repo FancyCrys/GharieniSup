@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@upstash/redis": "^1.34.0",
-    "@vercel/blob": "^1.0.0",
+    "@vercel/blob": "latest",
     "next": "^15.5.7",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"

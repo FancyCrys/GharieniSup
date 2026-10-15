@@ -29,6 +29,12 @@ export async function POST(req) {
     });
     return NextResponse.json(result);
   } catch (err) {
+    console.error("[upload] handleUpload failed:", err);
     return NextResponse.json({ error: err.message || "Upload failed." }, { status: 400 });
   }
+}
+
+// Lets the form explain *why* an upload failed (the Blob SDK hides the server's message).
+export async function GET() {
+  return NextResponse.json({ configured: Boolean(blobToken()) });
 }
