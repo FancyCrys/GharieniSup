@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadPresigned } from "@vercel/blob/client";
 import { SITES, PRIORITIES } from "@/lib/constants";
 import { ACCEPT_ATTR, MAX_FILES, MAX_FILE_MB, isAllowedType } from "@/lib/files";
 
@@ -39,7 +38,7 @@ export default function SubmitForm({ uploads }) {
         raw.name === "image.png" || !raw.name
           ? new File([raw], `screenshot-${Date.now()}.png`, { type: raw.type || "image/png" })
           : raw;
-      if (!isAllowedType(file.type)) {
+      if (!isAllowedType(file.type, file.name)) {
         setError(`"${file.name}" isn't a supported file type.`);
         continue;
       }
@@ -82,11 +81,17 @@ export default function SubmitForm({ uploads }) {
       for (let i = 0; i < files.length; i++) {
         const { file } = files[i];
         setProgress(`Uploading file ${i + 1} of ${files.length}…`);
-        const blob = await uploadPresigned(`tickets/${file.name}`, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-          contentType: file.type,
-        });
+        const fd = new FormData();
+        fd.append("file", file);
+        const up = await fetch("/api/upload", { method: "POST", body: fd });
+        const blob = await up.json().catch(() => ({}));
+        if (!up.ok || !blob.url) {
+          throw new Error(
+            up.status === 413
+              ? `"${file.name}" is too large to upload.`
+              : blob.error || `Couldn't upload "${file.name}" (error ${up.status}).`
+          );
+        }
         attachments.push({ url: blob.url, name: file.name, type: file.type, size: file.size });
       }
 
@@ -104,12 +109,6 @@ export default function SubmitForm({ uploads }) {
       setForm(EMPTY);
     } catch (err) {
       let msg = err.message || "Upload failed. Please try again.";
-      if (/token|presign|authori/i.test(msg)) {
-        const check = await fetch("/api/upload").then((r) => r.json()).catch(() => null);
-        msg = check && !check.configured
-          ? "File uploads aren't set up on the server yet (no Blob token). Remove the attachments to submit now."
-          : "The server couldn't authorise the upload. Please tell the admin, or remove the attachments to submit now.";
-      }
       setError(msg);
     } finally {
       setSending(false);

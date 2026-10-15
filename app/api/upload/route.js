@@ -1,50 +1,49 @@
 import { NextResponse } from "next/server";
-import { issueSignedToken } from "@vercel/blob";
-import { handleUploadPresigned } from "@vercel/blob/client";
-import { ALLOWED_TYPES, MAX_FILE_MB, blobToken, uploadsEnabled } from "@/lib/files";
+import { put } from "@vercel/blob";
+import { MAX_FILE_MB, blobToken, isAllowedType, uploadsEnabled } from "@/lib/files";
 
 export const dynamic = "force-dynamic";
 
-// Hands the browser a short-lived presigned URL so the file goes straight to
-// Vercel Blob. Works with new keyless (OIDC) stores and with a static token.
+// The browser posts one file at a time; the server saves it to Vercel Blob.
+// Server-side put() works with both keyless (OIDC) stores and static tokens.
 export async function POST(req) {
   if (!uploadsEnabled()) {
     return NextResponse.json(
-      { error: "File uploads aren't set up yet. Please submit without attachments for now." },
+      { error: "File uploads aren't set up yet. Remove the attachments to submit now." },
       { status: 503 }
     );
   }
-  const body = await req.json();
+
+  let file;
+  try {
+    const form = await req.formData();
+    file = form.get("file");
+  } catch {
+    return NextResponse.json({ error: "Couldn't read the file. It may be too large." }, { status: 400 });
+  }
+
+  if (!file || typeof file === "string") {
+    return NextResponse.json({ error: "No file received." }, { status: 400 });
+  }
+  if (!isAllowedType(file.type, file.name)) {
+    return NextResponse.json({ error: `"${file.name}" isn't a supported file type.` }, { status: 400 });
+  }
+  if (file.size > MAX_FILE_MB * 1024 * 1024) {
+    return NextResponse.json({ error: `"${file.name}" is over ${MAX_FILE_MB} MB.` }, { status: 400 });
+  }
+
+  const safeName = (file.name || "file").replace(/[^\w.\-]+/g, "_").slice(-120);
   const token = blobToken();
   try {
-    const result = await handleUploadPresigned({
-      body,
-      request: req,
-      getSignedToken: async (pathname) => ({
-        token: await issueSignedToken({
-          pathname,
-          operations: ["put"],
-          maximumSizeInBytes: MAX_FILE_MB * 1024 * 1024,
-          validUntil: Date.now() + 15 * 60 * 1000,
-          ...(token ? { token } : {}),
-        }),
-        urlOptions: {
-          allowedContentTypes: ALLOWED_TYPES,
-          maximumSizeInBytes: MAX_FILE_MB * 1024 * 1024,
-          validUntil: Date.now() + 10 * 60 * 1000,
-          addRandomSuffix: true,
-          allowOverwrite: false,
-        },
-      }),
+    const blob = await put(`tickets/${safeName}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: file.type || "application/octet-stream",
+      ...(token ? { token } : {}),
     });
-    return NextResponse.json(result);
+    return NextResponse.json({ url: blob.url });
   } catch (err) {
-    console.error("[upload] presign failed:", err);
-    return NextResponse.json({ error: err.message || "Upload failed." }, { status: 400 });
+    console.error("[upload] put failed:", err);
+    return NextResponse.json({ error: `Upload failed: ${err.message || err}` }, { status: 500 });
   }
-}
-
-// Lets the form explain *why* an upload failed.
-export async function GET() {
-  return NextResponse.json({ configured: uploadsEnabled() });
 }
