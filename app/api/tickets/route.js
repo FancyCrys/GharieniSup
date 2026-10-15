@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { SITES, PRIORITIES } from "@/lib/constants";
 import { createTicket, listTickets, storageReady } from "@/lib/store";
 import { isAdmin } from "@/lib/auth";
+import { MAX_FILES, isBlobUrl } from "@/lib/files";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,18 @@ export async function POST(req) {
   const sites = Array.isArray(body.sites) ? body.sites.filter((s) => SITES.includes(s)) : [];
   const priority = PRIORITIES.some((p) => p.value === body.priority) ? body.priority : null;
   const comment = clean(body.comment, 5000);
+  const name = clean(body.name, 120);
+  const attachments = (Array.isArray(body.attachments) ? body.attachments : [])
+    .filter((a) => a && isBlobUrl(a.url))
+    .slice(0, MAX_FILES)
+    .map((a) => ({
+      url: a.url,
+      name: clean(a.name, 200) || "file",
+      type: clean(a.type, 120),
+      size: Number(a.size) || 0,
+    }));
+
+  if (name.length < 2) return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
 
   if (sites.length === 0) return NextResponse.json({ error: "Choose at least one website." }, { status: 400 });
   if (!priority) return NextResponse.json({ error: "Choose a priority." }, { status: 400 });
@@ -37,9 +50,10 @@ export async function POST(req) {
     sites,
     priority,
     comment,
-    name: clean(body.name, 120),
+    name,
     email: clean(body.email, 200),
     pageUrl: clean(body.pageUrl, 1000),
+    attachments,
   });
 
   return NextResponse.json({ ok: true, id: ticket.id });

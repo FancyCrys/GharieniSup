@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { STATUSES, PRIORITIES } from "@/lib/constants";
-import { updateTicket, deleteTicket } from "@/lib/store";
+import { del } from "@vercel/blob";
+import { updateTicket, deleteTicket, getTicket } from "@/lib/store";
+import { uploadsEnabled } from "@/lib/files";
 import { isAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,13 @@ export async function PATCH(req, { params }) {
 export async function DELETE(req, { params }) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+  const ticket = await getTicket(id);
+  const urls = (ticket?.attachments || []).map((a) => a.url);
+  if (urls.length && uploadsEnabled()) {
+    try {
+      await del(urls);
+    } catch {}
+  }
   await deleteTicket(id);
   return NextResponse.json({ ok: true });
 }

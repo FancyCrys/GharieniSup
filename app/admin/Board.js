@@ -97,7 +97,7 @@ export default function Board({ memoryWarning }) {
       .filter(
         (t) =>
           !needle ||
-          [t.comment, t.name, t.email, t.pageUrl, t.note, `#${t.id}`].some((v) => (v || "").toLowerCase().includes(needle))
+          [t.comment, t.name, ...(t.attachments || []).map((a) => a.name), t.email, t.pageUrl, t.note, `#${t.id}`].some((v) => (v || "").toLowerCase().includes(needle))
       )
       .sort(
         (a, b) =>
@@ -222,6 +222,22 @@ function Ticket({ t, onPatch, onDelete }) {
       </div>
 
       <p className="comment">{t.comment}</p>
+
+      {t.attachments?.length > 0 && (
+        <div className="attachments">
+          {t.attachments.map((a) =>
+            a.type?.startsWith("image/") ? (
+              <a key={a.url} href={a.url} target="_blank" rel="noreferrer" className="thumb" title={a.name}>
+                <img src={a.url} alt={a.name} loading="lazy" />
+              </a>
+            ) : (
+              <a key={a.url} href={a.url} target="_blank" rel="noreferrer" className="file-link">
+                📄 {a.name}
+              </a>
+            )
+          )}
+        </div>
+      )}
 
       {(t.name || t.email || t.pageUrl || (done && t.doneAt)) && (
         <div className="t-sub">
