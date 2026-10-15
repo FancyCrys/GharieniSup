@@ -1,40 +1,50 @@
 import { NextResponse } from "next/server";
-import { handleUpload } from "@vercel/blob/client";
-import { ALLOWED_TYPES, MAX_FILE_MB, blobToken } from "@/lib/files";
+import { issueSignedToken } from "@vercel/blob";
+import { handleUploadPresigned } from "@vercel/blob/client";
+import { ALLOWED_TYPES, MAX_FILE_MB, blobToken, uploadsEnabled } from "@/lib/files";
 
 export const dynamic = "force-dynamic";
 
-// Issues short-lived tokens so the browser uploads straight to Vercel Blob
-// (avoids the 4.5 MB request limit on serverless functions).
+// Hands the browser a short-lived presigned URL so the file goes straight to
+// Vercel Blob. Works with new keyless (OIDC) stores and with a static token.
 export async function POST(req) {
-  const token = blobToken();
-  if (!token) {
+  if (!uploadsEnabled()) {
     return NextResponse.json(
       { error: "File uploads aren't set up yet. Please submit without attachments for now." },
       { status: 503 }
     );
   }
   const body = await req.json();
+  const token = blobToken();
   try {
-    const result = await handleUpload({
+    const result = await handleUploadPresigned({
       body,
       request: req,
-      token,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: ALLOWED_TYPES,
-        maximumSizeInBytes: MAX_FILE_MB * 1024 * 1024,
-        addRandomSuffix: true,
+      getSignedToken: async (pathname) => ({
+        token: await issueSignedToken({
+          pathname,
+          operations: ["put"],
+          maximumSizeInBytes: MAX_FILE_MB * 1024 * 1024,
+          validUntil: Date.now() + 15 * 60 * 1000,
+          ...(token ? { token } : {}),
+        }),
+        urlOptions: {
+          allowedContentTypes: ALLOWED_TYPES,
+          maximumSizeInBytes: MAX_FILE_MB * 1024 * 1024,
+          validUntil: Date.now() + 10 * 60 * 1000,
+          addRandomSuffix: true,
+          allowOverwrite: false,
+        },
       }),
-      onUploadCompleted: async () => {},
     });
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[upload] handleUpload failed:", err);
+    console.error("[upload] presign failed:", err);
     return NextResponse.json({ error: err.message || "Upload failed." }, { status: 400 });
   }
 }
 
-// Lets the form explain *why* an upload failed (the Blob SDK hides the server's message).
+// Lets the form explain *why* an upload failed.
 export async function GET() {
-  return NextResponse.json({ configured: Boolean(blobToken()) });
+  return NextResponse.json({ configured: uploadsEnabled() });
 }

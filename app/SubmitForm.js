@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { upload } from "@vercel/blob/client";
+import { uploadPresigned } from "@vercel/blob/client";
 import { SITES, PRIORITIES } from "@/lib/constants";
 import { ACCEPT_ATTR, MAX_FILES, MAX_FILE_MB, isAllowedType } from "@/lib/files";
 
@@ -82,7 +82,7 @@ export default function SubmitForm({ uploads }) {
       for (let i = 0; i < files.length; i++) {
         const { file } = files[i];
         setProgress(`Uploading file ${i + 1} of ${files.length}…`);
-        const blob = await upload(`tickets/${file.name}`, file, {
+        const blob = await uploadPresigned(`tickets/${file.name}`, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
           contentType: file.type,
@@ -104,7 +104,7 @@ export default function SubmitForm({ uploads }) {
       setForm(EMPTY);
     } catch (err) {
       let msg = err.message || "Upload failed. Please try again.";
-      if (/client token/i.test(msg)) {
+      if (/token|presign|authori/i.test(msg)) {
         const check = await fetch("/api/upload").then((r) => r.json()).catch(() => null);
         msg = check && !check.configured
           ? "File uploads aren't set up on the server yet (no Blob token). Remove the attachments to submit now."
