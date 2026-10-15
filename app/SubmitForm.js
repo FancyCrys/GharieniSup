@@ -61,7 +61,6 @@ export default function SubmitForm({ uploads }) {
   }
 
   function onPaste(e) {
-    if (!uploads) return;
     const pasted = Array.from(e.clipboardData?.files || []);
     if (pasted.length) {
       e.preventDefault();
@@ -230,8 +229,7 @@ export default function SubmitForm({ uploads }) {
           />
         </div>
 
-        {uploads && (
-          <div className="field">
+        <div className="field">
             <span className="label">
               Screenshots, photos or files <span className="opt">(optional)</span>
             </span>
@@ -276,7 +274,6 @@ export default function SubmitForm({ uploads }) {
               </ul>
             )}
           </div>
-        )}
 
         <div className="hp" aria-hidden="true">
           <input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => set("website", e.target.value)} />

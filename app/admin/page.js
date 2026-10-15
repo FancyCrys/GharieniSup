@@ -1,5 +1,6 @@
 import { isAdmin, passwordConfigured } from "@/lib/auth";
 import { usingMemory } from "@/lib/store";
+import { uploadsEnabled } from "@/lib/files";
 import LoginForm from "./LoginForm";
 import Board from "./Board";
 
@@ -26,5 +27,5 @@ export default async function AdminPage() {
     );
   }
 
-  return <Board memoryWarning={usingMemory()} />;
+  return <Board memoryWarning={usingMemory()} uploadsWarning={!uploadsEnabled()} />;
 }

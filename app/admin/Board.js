@@ -17,7 +17,7 @@ function timeAgo(iso) {
   return new Date(iso).toLocaleDateString();
 }
 
-export default function Board({ memoryWarning }) {
+export default function Board({ memoryWarning, uploadsWarning }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -129,6 +129,11 @@ export default function Board({ memoryWarning }) {
       {memoryWarning && (
         <div className="warn">
           No database connected: tickets are only kept in memory. Connect Upstash Redis in Vercel → Storage.
+        </div>
+      )}
+      {uploadsWarning && (
+        <div className="warn">
+          File uploads aren&apos;t connected: no Blob token found. Connect a Public Blob store to this project in Vercel → Storage, then redeploy.
         </div>
       )}
       {error && <div className="error">{error}</div>}
