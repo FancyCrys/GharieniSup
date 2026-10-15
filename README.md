@@ -2,7 +2,7 @@
 
 A small ticket app for website fixes across **Gharieni, GharieniGroup, Bentlon and Cobalt**.
 
-- `/`: public form: name (required), pick website(s), priority (High = immediate fix, Medium, Low), describe the issue, optional page link / email, and optional screenshots, photos or files (drag & drop, click, or paste a screenshot with Ctrl+V; up to 5 files, 25 MB each).
+- `/`: public form: name (required), pick website(s), priority (High = immediate fix, Medium, Low), describe the issue, optional page link / email, and optional screenshots, photos or files (drag & drop, click, or paste a screenshot with Ctrl+V; up to 5 files, 4 MB each).
 - `/admin`: password-protected dashboard: see all tickets, filter by status / site / priority, search, mark **Done**, **Start** (in progress), **Reopen**, change priority, add private notes, delete.
 
 Built with Next.js; tickets are stored in Upstash Redis and attachments in Vercel Blob (free tiers are plenty).
