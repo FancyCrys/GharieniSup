@@ -256,6 +256,13 @@ function Ticket({ t, onPatch, onDelete }) {
             </a>
           )}
           {done && t.doneAt && <span>Done {timeAgo(t.doneAt)}</span>}
+          {done && t.closedEmail && (
+            <span style={{ color: t.closedEmail.ok ? "var(--low)" : "var(--high)" }} title={t.closedEmail.error || ""}>
+              {t.closedEmail.ok
+                ? `✓ Completion email sent to ${t.closedEmail.to}`
+                : `✗ Completion email failed: ${t.closedEmail.error || "unknown error"}`}
+            </span>
+          )}
         </div>
       )}
 
@@ -266,8 +273,12 @@ function Ticket({ t, onPatch, onDelete }) {
           </button>
         ) : (
           <>
-            <button className="btn small" onClick={() => onPatch(t.id, { status: "done" })}>
-              ✓ Mark done
+            <button
+              className="btn small"
+              onClick={() => onPatch(t.id, { status: "done" })}
+              title={t.email ? `Also emails ${t.email} that it's completed` : undefined}
+            >
+              {t.email ? "✓ Mark done & notify" : "✓ Mark done"}
             </button>
             {t.status === "open" && (
               <button className="btn ghost small" onClick={() => onPatch(t.id, { status: "in_progress" })}>

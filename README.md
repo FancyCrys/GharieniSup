@@ -25,6 +25,8 @@ Built with Next.js; tickets are stored in Upstash Redis and attachments in Verce
    - `NOTIFY_FROM` (optional): e.g. `Gharieni Support <support@yourdomain.com>`, only once you've verified that domain in Resend. Without it, alerts come from onboarding@resend.dev and can only go to your Resend sign-up address.
 4. Redeploy.
 
+When you mark a ticket **Done**, the person who submitted it gets a "your ticket has been completed" email (only if they left their email). The dashboard shows whether it was sent. Note: this needs a verified domain in Resend plus `NOTIFY_FROM`; with the default onboarding@resend.dev sender, Resend only delivers to your own address.
+
 Urgent tickets get a 🔴 URGENT subject line, and replying to the email replies to the person who submitted it (if they gave an email).
 
 Then share the site's main URL with your team and log in yourself at `/admin`.
