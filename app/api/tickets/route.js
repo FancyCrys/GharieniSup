@@ -3,7 +3,7 @@ import { SITES, PRIORITIES } from "@/lib/constants";
 import { createTicket, listTickets, storageReady } from "@/lib/store";
 import { isAdmin } from "@/lib/auth";
 import { MAX_FILES, isBlobUrl } from "@/lib/files";
-import { notifyNewTicket } from "@/lib/notify";
+import { notifyNewTicket, notifyTicketReceived } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,8 @@ export async function POST(req) {
     attachments,
   });
 
-  await notifyNewTicket(ticket, new URL(req.url).origin);
+  // Alert the admin and confirm to the submitter (in parallel; failures never block the ticket).
+  await Promise.allSettled([notifyNewTicket(ticket, new URL(req.url).origin), notifyTicketReceived(ticket)]);
 
   return NextResponse.json({ ok: true, id: ticket.id });
 }

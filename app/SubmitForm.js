@@ -160,7 +160,7 @@ export default function SubmitForm({ uploads }) {
           </div>
           <div>
             <label className="label" htmlFor="email">
-              Email <span className="opt">(optional, to hear when it&apos;s fixed)</span>
+              Email <span className="opt">(optional, get updates on your ticket)</span>
             </label>
             <input
               id="email"

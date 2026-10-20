@@ -17,7 +17,7 @@ Built with Next.js; tickets are stored in Upstash Redis and attachments in Verce
 
 ### Email notifications (optional)
 
-The app emails **you** when a ticket comes in, and emails **the submitter** (if they left an email) when you mark it Done.
+The app emails **you** when a ticket comes in. If the submitter left an email, they get a "we've received your ticket" confirmation straight away, and a "completed" email when you mark it Done.
 
 **Easiest: send from your Gmail** (free, ~500 emails/day, no domain needed)
 
