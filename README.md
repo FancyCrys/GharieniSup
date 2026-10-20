@@ -15,19 +15,23 @@ Built with Next.js; tickets are stored in Upstash Redis and attachments in Verce
 4. **Set your password**: **Settings → Environment Variables** → add `ADMIN_PASSWORD` (whatever you want to log in with). Optionally add `SESSION_SECRET` (any long random string).
 5. **Redeploy**: Deployments → ⋯ → Redeploy, so the new variables are picked up.
 
-### Email alerts for new tickets (optional)
+### Email notifications (optional)
 
-1. Sign up free at resend.com (use the email address you want alerts sent to).
-2. Create an API key under **API Keys**.
+The app emails **you** when a ticket comes in, and emails **the submitter** (if they left an email) when you mark it Done.
+
+**Easiest: send from your Gmail** (free, ~500 emails/day, no domain needed)
+
+1. Turn on 2-Step Verification for your Google account (myaccount.google.com → Security).
+2. Go to myaccount.google.com/apppasswords, create an app password named "Gharieni Support", and copy the 16-letter code.
 3. In Vercel → **Settings → Environment Variables**, add:
-   - `RESEND_API_KEY`: the key from Resend
-   - `NOTIFY_EMAIL`: where to send alerts (comma-separate several addresses)
-   - `NOTIFY_FROM` (optional): e.g. `Gharieni Support <support@yourdomain.com>`, only once you've verified that domain in Resend. Without it, alerts come from onboarding@resend.dev and can only go to your Resend sign-up address.
+   - `GMAIL_USER`: your Gmail address
+   - `GMAIL_APP_PASSWORD`: the 16-letter code
+   - `NOTIFY_EMAIL` (optional): where new-ticket alerts go (comma-separate several). Defaults to `GMAIL_USER`.
 4. Redeploy.
 
-When you mark a ticket **Done**, the person who submitted it gets a "your ticket has been completed" email (only if they left their email). The dashboard shows whether it was sent. Note: this needs a verified domain in Resend plus `NOTIFY_FROM`; with the default onboarding@resend.dev sender, Resend only delivers to your own address.
+**Alternative: Resend** (needs your own verified domain to email people other than yourself): set `RESEND_API_KEY`, `NOTIFY_EMAIL` and `NOTIFY_FROM`. If Gmail settings are present, Gmail is used instead.
 
-Urgent tickets get a 🔴 URGENT subject line, and replying to the email replies to the person who submitted it (if they gave an email).
+Urgent tickets get a 🔴 URGENT subject line. Replying to an alert replies to the submitter; replying to a completion email replies to you. The dashboard shows whether each completion email was sent.
 
 Then share the site's main URL with your team and log in yourself at `/admin`.
 
