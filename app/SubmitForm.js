@@ -160,7 +160,7 @@ export default function SubmitForm({ uploads }) {
           </div>
           <div>
             <label className="label" htmlFor="email">
-              Email <span className="opt">(optional, get updates on your ticket)</span>
+              Email <span className="opt">(optional)</span>
             </label>
             <input
               id="email"
@@ -170,6 +170,7 @@ export default function SubmitForm({ uploads }) {
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
             />
+            <span className="hint">We&apos;ll email you updates on your ticket.</span>
           </div>
         </div>
 
