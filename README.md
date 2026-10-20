@@ -29,8 +29,6 @@ The app emails **you** when a ticket comes in. If the submitter left an email, t
    - `NOTIFY_EMAIL` (optional): where new-ticket alerts go (comma-separate several). Defaults to `GMAIL_USER`.
 4. Redeploy.
 
-**Alternative: Resend** (needs your own verified domain to email people other than yourself): set `RESEND_API_KEY`, `NOTIFY_EMAIL` and `NOTIFY_FROM`. If Gmail settings are present, Gmail is used instead.
-
 Urgent tickets get a 🔴 URGENT subject line. Replying to an alert replies to the submitter; replying to a completion email replies to you. The dashboard shows whether each completion email was sent.
 
 Then share the site's main URL with your team and log in yourself at `/admin`.
